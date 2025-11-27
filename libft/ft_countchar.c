@@ -1,32 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_list_push_back.c                                :+:      :+:    :+:   */
+/*   ft_countchar.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wedos-sa <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: bedantas <bedantas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/09/02 14:42:20 by wedos-sa          #+#    #+#             */
-/*   Updated: 2025/09/02 14:50:25 by wedos-sa         ###   ########.fr       */
+/*   Created: 2025/10/31 15:54:25 by bedantas          #+#    #+#             */
+/*   Updated: 2025/10/31 15:56:28 by bedantas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-void	ft_list_push_back(t_list **begin_list, void *data)
+int	ft_countchar(char *str, char c)
 {
-	t_list	*last;
-	t_list	*item;
+	int	i;
+	int	count;
 
-	if (!begin_list)
-		return ;
-	item = ft_create_elem(data);
-	if (!item)
-		return ;
-	if (!*begin_list)
+	i = 0;
+	count = 0;
+	while (str[i])
 	{
-		*begin_list = item;
-		return ;
+		if (str[i] == c)
+			count++;
+		i++;
 	}
-	last = ft_list_last(*begin_list);
-	last->next = item;
+	return (count);
 }

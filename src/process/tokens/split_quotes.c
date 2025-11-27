@@ -1,6 +1,18 @@
-#include "../../utils/minishell.h"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   split_quotes.c                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: bedantas <bedantas@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/11/26 16:32:49 by bedantas          #+#    #+#             */
+/*   Updated: 2025/11/26 16:32:50 by bedantas         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-void	handle_quote_state(char c, int *in_quotes, char *quote_char)
+#include "../../../utils/minishell.h"
+
+static void	handle_quote_state(char c, int *in_quotes, char *quote_char)
 {
 	if (c == '\'' || c == '"')
 	{
@@ -14,7 +26,7 @@ void	handle_quote_state(char c, int *in_quotes, char *quote_char)
 	}
 }
 
-int	count_args(char *line)
+static int	count_args(char *line)
 {
 	int		count;
 	int		in_quotes;
@@ -38,7 +50,7 @@ int	count_args(char *line)
 	return (count);
 }
 
-int	find_arg_end(char *line, int start)
+static int	find_arg_end(char *line, int start)
 {
 	int		i;
 	int		in_quotes;

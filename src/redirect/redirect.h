@@ -1,24 +1,35 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strndup.c                                       :+:      :+:    :+:   */
+/*   redirect.h                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: bedantas <bedantas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/07/15 15:50:39 by wedos-sa          #+#    #+#             */
-/*   Updated: 2025/11/05 13:49:12 by bedantas         ###   ########.fr       */
+/*   Created: 2025/11/26 16:31:36 by bedantas          #+#    #+#             */
+/*   Updated: 2025/11/26 16:31:37 by bedantas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#ifndef REDIRECT_H
+# define REDIRECT_H
 
-char	*ft_strndup(const char *s1, size_t n)
+typedef struct s_fd
 {
-	char	*s2;
+	int	i;
+	int	tmp;
+	int	quote[2];
+	int	*fd;
+}	t_fd;
 
-	s2 = malloc((n + 1) * sizeof(char));
-	if (!s2)
-		return (NULL);
-	ft_strlcpy(s2, s1, n);
-	return (s2);
-}
+typedef struct s_here
+{
+	char	**to_free;
+	char	*result;
+	char	*eof;
+	char	*temp1;
+	char	*str;
+	char	*tmp1;
+	char	*tmp2;
+}	t_here;
+
+#endif

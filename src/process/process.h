@@ -1,24 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strndup.c                                       :+:      :+:    :+:   */
+/*   process.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: bedantas <bedantas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/07/15 15:50:39 by wedos-sa          #+#    #+#             */
-/*   Updated: 2025/11/05 13:49:12 by bedantas         ###   ########.fr       */
+/*   Created: 2025/11/26 16:32:19 by bedantas          #+#    #+#             */
+/*   Updated: 2025/11/26 16:32:20 by bedantas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#ifndef PROCESS_H
+# define PROCESS_H
 
-char	*ft_strndup(const char *s1, size_t n)
+typedef struct s_pipes
 {
-	char	*s2;
+	int		prev_fd;
+	int		fd[2];
+	pid_t	pid;
+	char	*cmd;
+	char	**tokens_cmd;
+	pid_t	last_pid;
+}	t_pipes;
 
-	s2 = malloc((n + 1) * sizeof(char));
-	if (!s2)
-		return (NULL);
-	ft_strlcpy(s2, s1, n);
-	return (s2);
-}
+#endif

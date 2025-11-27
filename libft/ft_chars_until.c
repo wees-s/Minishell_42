@@ -1,32 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_list_push_back.c                                :+:      :+:    :+:   */
+/*   ft_chars_until.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wedos-sa <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: bedantas <bedantas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/09/02 14:42:20 by wedos-sa          #+#    #+#             */
-/*   Updated: 2025/09/02 14:50:25 by wedos-sa         ###   ########.fr       */
+/*   Created: 2025/10/31 17:06:03 by bedantas          #+#    #+#             */
+/*   Updated: 2025/11/03 10:41:09 by bedantas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-void	ft_list_push_back(t_list **begin_list, void *data)
+int	ft_chars_until(char *s, char c)
 {
-	t_list	*last;
-	t_list	*item;
+	int	i;
 
-	if (!begin_list)
-		return ;
-	item = ft_create_elem(data);
-	if (!item)
-		return ;
-	if (!*begin_list)
+	i = 0;
+	while (s[i])
 	{
-		*begin_list = item;
-		return ;
+		if (s[i] == c)
+			return (i);
+		i++;
 	}
-	last = ft_list_last(*begin_list);
-	last->next = item;
+	return (-1);
 }

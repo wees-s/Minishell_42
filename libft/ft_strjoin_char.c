@@ -1,24 +1,38 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strndup.c                                       :+:      :+:    :+:   */
+/*   ft_strjoin_char.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: bedantas <bedantas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/07/15 15:50:39 by wedos-sa          #+#    #+#             */
-/*   Updated: 2025/11/05 13:49:12 by bedantas         ###   ########.fr       */
+/*   Created: 2025/07/28 11:09:34 by wedos-sa          #+#    #+#             */
+/*   Updated: 2025/11/07 14:30:37 by bedantas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-char	*ft_strndup(const char *s1, size_t n)
+char	*ft_strjoin_char(char *s, char c)
 {
-	char	*s2;
+	int		len;
+	char	*new;
 
-	s2 = malloc((n + 1) * sizeof(char));
-	if (!s2)
+	if (!s)
+	{
+		new = malloc(2);
+		if (!new)
+			return (NULL);
+		new[0] = c;
+		new[1] = '\0';
+		return (new);
+	}
+	len = ft_strlen(s);
+	new = malloc(len + 2);
+	if (!new)
 		return (NULL);
-	ft_strlcpy(s2, s1, n);
-	return (s2);
+	ft_memcpy(new, s, len);
+	new[len] = c;
+	new[len + 1] = '\0';
+	free(s);
+	return (new);
 }

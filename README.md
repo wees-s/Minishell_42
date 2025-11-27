@@ -1,392 +1,835 @@
-DICIONÁRIO DE FUNÇÕES PERMITIDAS:
+# minishell
 
-**readline** – lê uma linha digitada no terminal com suporte a edição e histórico; retorna uma string alocada dinamicamente.
-**rl_clear_history** – limpa toda a memória usada pelo histórico do `readline`.
-**rl_on_new_line** – avisa ao `readline` que o cursor deve ir para uma nova linha (geralmente após sinal).
-**rl_replace_line** – substitui o conteúdo atual da linha sendo editada por outro texto.
-**rl_redisplay** – redesenha o prompt e o texto atual da linha no terminal.
-**add_history** – adiciona uma linha ao histórico de comandos do `readline`.
+A simple shell implementation inspired by bash, featuring command execution, pipes, redirections, and built-in commands as part of the 42 School curriculum.
 
-**printf** – imprime texto formatado na saída padrão.
-**malloc** – aloca dinamicamente uma área de memória e retorna seu ponteiro.
-**free** – libera a memória previamente alocada com `malloc`.
-**write** – escreve dados em um descritor de arquivo (como stdout).
-**access** – verifica permissões de acesso a um arquivo (leitura, escrita, execução).
-**open** – abre ou cria um arquivo e retorna seu descritor.
-**read** – lê bytes de um descritor de arquivo.
-**close** – fecha um descritor de arquivo.
+## Table of Contents
 
-**fork** – cria um novo processo, duplicando o processo atual.
-**wait** – aguarda a finalização de um processo filho.
-**waitpid** – aguarda um processo filho específico terminar.
-**wait3 / wait4** – variantes de `wait` que também retornam informações de uso de recursos.
+- [Description](#description)
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Built-in Commands](#built-in-commands)
+- [Architecture](#architecture)
+- [Implementation Details](#implementation-details)
+- [Project Structure](#project-structure)
+- [Compilation](#compilation)
+- [Testing](#testing)
+- [Key Concepts](#key-concepts)
+- [Authors](#authors)
 
-**signal** – define uma função que será executada quando um sinal específico for recebido.
-**sigaction** – versão mais robusta e configurável de `signal`.
-**sigemptyset** – inicializa um conjunto de sinais vazio.
-**sigaddset** – adiciona um sinal a um conjunto de sinais.
-**kill** – envia um sinal a um processo (ex: terminar, parar, continuar).
-**exit** – encerra o processo atual liberando recursos e retornando um código de status.
+## Description
 
-**getcwd** – obtém o diretório de trabalho atual.
-**chdir** – muda o diretório de trabalho atual.
-**stat / lstat / fstat** – obtém informações sobre um arquivo (tamanho, permissões, tipo).
-**unlink** – remove (deleta) um arquivo do sistema.
-**execve** – substitui o processo atual por outro programa executável.
+`minishell` is a minimalist shell that replicates core bash functionality. The project teaches fundamental Unix concepts including process management, file descriptors, pipes, signal handling, and command parsing. It provides an interactive command-line interface with support for command history, variable expansion, and proper signal handling.
 
-**dup** – duplica um descritor de arquivo.
-**dup2** – duplica um descritor de arquivo para um número específico (ex: redirecionamento).
-**pipe** – cria um canal de comunicação entre processos (leitura/escrita).
+## Features
 
-**opendir** – abre um diretório para leitura.
-**readdir** – lê a próxima entrada de um diretório aberto.
-**closedir** – fecha um diretório aberto.
+- ✅ Interactive prompt with command history
+- ✅ Command execution from PATH or absolute paths
+- ✅ Pipes (`|`) for chaining commands
+- ✅ Input/output redirections (`<`, `>`, `>>`)
+- ✅ Here-document (`<<`) support
+- ✅ Environment variable expansion (`$VAR`, `$?`)
+- ✅ Signal handling (Ctrl+C, Ctrl+D, Ctrl+\)
+- ✅ Quote handling (single `'` and double `"`)
+- ✅ Seven built-in commands
+- ✅ Proper exit codes and error handling
 
-**strerror** – retorna uma string descritiva de um código de erro (`errno`).
-**perror** – imprime automaticamente a mensagem de erro associada ao último erro.
+## Installation
 
-**isatty** – verifica se um descritor de arquivo é um terminal interativo.
-**ttyname** – retorna o nome do terminal associado a um descritor.
-**ttyslot** – retorna o número de slot do terminal atual.
-**ioctl** – realiza operações de controle direto sobre dispositivos (como terminais).
+1. Clone the repository:
+```bash
+git clone https://github.com/be-dantas/42_Milestone3_MiniShell.git
+cd 42_Milestone3_MiniShell
+```
 
-**getenv** – obtém o valor de uma variável de ambiente.
-**tcsetattr / tcgetattr** – configuram ou obtêm atributos do terminal (modo canônico, eco, etc.).
+2. Install readline library (if needed):
+```bash
+# Ubuntu/Debian
+sudo apt-get install libreadline-dev
 
-**tgetent** – inicializa o acesso à base de dados termcap (capacidade do terminal).
-**tgetflag** – lê uma flag booleana da base termcap.
-**tgetnum** – lê um valor numérico da base termcap.
-**tgetstr** – lê uma string de controle da base termcap.
-**tgoto** – gera uma string de controle para posicionar o cursor em uma coordenada.
-**tputs** – envia uma string de controle ao terminal (normalmente usada com `tgetstr`/`tgoto`).
+# macOS
+brew install readline
+```
 
+3. Compile the project:
+```bash
+make
+```
 
+This will create the `minishell` executable.
 
-# 42_Milestone3_MiniShell
-# Estrutura
+## Usage
 
-# 🧱 1. Estrutura de Pastas
-
-Organize desde o começo — isso te poupa dor de cabeça no fim:
+### Starting the Shell
 
 ```bash
+./minishell
+```
+
+You'll see the prompt:
+```
+minishell$
+```
+
+### Basic Commands
+
+```bash
+# Simple command execution
+minishell$ ls -la
+minishell$ echo "Hello, World!"
+minishell$ pwd
+
+# Command with pipes
+minishell$ ls | grep minishell | wc -l
+
+# Input/output redirection
+minishell$ cat < input.txt
+minishell$ echo "test" > output.txt
+minishell$ echo "append" >> output.txt
+
+# Here-document
+minishell$ cat << EOF
+> Hello
+> World
+> EOF
+
+# Variable expansion
+minishell$ echo $USER
+minishell$ echo $?
+minishell$ export MY_VAR="test"
+minishell$ echo $MY_VAR
+```
+
+### Exit the Shell
+
+```bash
+minishell$ exit
+```
+
+Or press `Ctrl+D`.
+
+## Built-in Commands
+
+### `echo [-n] [args...]`
+Prints arguments to standard output.
+
+```bash
+minishell$ echo Hello World
+Hello World
+minishell$ echo -n "No newline"
+No newline$
+```
+
+### `cd [path]`
+Changes the current directory.
+
+```bash
+minishell$ cd /tmp
+minishell$ cd ..
+minishell$ cd ~
+minishell$ cd          # goes to HOME
+```
+
+### `pwd`
+Prints the current working directory.
+
+```bash
+minishell$ pwd
+/home/user/minishell
+```
+
+### `export [VAR=value]`
+Sets or displays environment variables.
+
+```bash
+minishell$ export PATH="/usr/bin"
+minishell$ export MY_VAR="hello"
+minishell$ export           # displays all variables
+```
+
+### `unset [VAR]`
+Removes environment variables.
+
+```bash
+minishell$ unset MY_VAR
+minishell$ echo $MY_VAR
+                        # empty
+```
+
+### `env`
+Displays all environment variables.
+
+```bash
+minishell$ env
+PATH=/usr/bin:/bin
+USER=student
+HOME=/home/student
+...
+```
+
+### `exit [code]`
+Exits the shell with optional exit code.
+
+```bash
+minishell$ exit
+minishell$ exit 42
+```
+
+## Architecture
+
+### System Flow Diagram
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                         ENTRADA                             │
+│  • Herança envp                                             │
+│  • Sinais (SIGINT, SIGQUIT)                                │
+│  • Readline (histórico)                                     │
+│  • Limpeza de saída (SIGINT, EXIT)                         │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│                          MAIN                               │
+│  envp (herança) + signal (d, \, c) + histórico + readline  │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│                       COMMANDS                              │
+│  • Lista, modifica, env (EXPORT, UNSET, EXPANDER)         │
+│  • Determina execução de comandos                          │
+│  • Detecta heredoc                                         │
+│  • Validação de input, expansão simples, completa         │
+│  • Tokenização, redirecionamento, identificação pipes      │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│                         PIPES                               │
+│  • Redirecionamento de saída para o próximo                │
+│  • Criação de processo filho (FORK)                        │
+│  • Execução de comando (EXECVE)                            │
+│  • Resultado no FD e descritor esperado (DUP2)            │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│                        RESULT                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Core Components
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                        CORE                              │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐             │
+│  │  Export  │  │   Echo   │  │ Expander │             │
+│  └──────────┘  └──────────┘  └────┬─────┘             │
+│  ┌──────────┐  ┌──────────┐       │                   │
+│  │  Unset   │  │   Exit   │       │                   │
+│  └──────────┘  └──────────┘       │                   │
+│  ┌──────────┐  ┌──────────┐  ┌────▼─────┐            │
+│  │   Env    │  │    Cd    │  │   Pwd    │            │
+│  └──────────┘  └──────────┘  └──────────┘            │
+│                                                        │
+│  ┌──────────┐             ┌──────────────┐           │
+│  │ Heredoc  │             │  BUILT-INs   │           │
+│  └──────────┘             └──────────────┘           │
+└──────────────────────────────────────────────────────────┘
+```
+
+## Implementation Details
+
+### Main Loop
+
+```c
+int main(int argc, char **argv, char **envp)
+{
+    char *line;
+    t_shell shell;
+    
+    // Initialize shell structure with environment
+    init_shell(&shell, envp);
+    setup_signals();
+    
+    while (1)
+    {
+        line = readline("minishell$ ");
+        
+        if (!line)  // Ctrl+D
+            break;
+            
+        if (*line)
+            add_history(line);
+            
+        // Process and execute command
+        process_line(line, &shell);
+        free(line);
+    }
+    
+    cleanup_shell(&shell);
+    return (shell.exit_code);
+}
+```
+
+### Core Structures
+
+```c
+// Token types
+typedef enum e_token_type
+{
+    T_WORD,           // Regular word
+    T_PIPE,           // |
+    T_REDIRECT_IN,    // <
+    T_REDIRECT_OUT,   // >
+    T_APPEND,         // >>
+    T_HEREDOC,        // <<
+} t_token_type;
+
+// Token structure
+typedef struct s_token
+{
+    char            *value;
+    t_token_type    type;
+    struct s_token  *next;
+} t_token;
+
+// Command structure
+typedef struct s_cmd
+{
+    char    **args;         // Command and arguments
+    char    *input_file;    // Input redirection file
+    char    *output_file;   // Output redirection file
+    int     append;         // Append mode flag
+    int     heredoc;        // Heredoc flag
+    char    *delimiter;     // Heredoc delimiter
+    int     pipe_in;        // Has pipe input
+    int     pipe_out;       // Has pipe output
+} t_cmd;
+
+// Shell state
+typedef struct s_shell
+{
+    char    **envp;         // Environment variables
+    int     exit_code;      // Last exit code ($?)
+    t_token *tokens;        // Parsed tokens
+    t_cmd   *commands;      // Parsed commands
+} t_shell;
+```
+
+### Processing Pipeline
+
+#### 1. Lexer (Tokenization)
+
+Splits input into tokens respecting quotes:
+
+```c
+t_token *lexer(char *line)
+{
+    t_token *tokens;
+    
+    // Split by spaces, respecting quotes
+    // Identify operators (|, <, >, >>, <<)
+    // Store in linked list
+    
+    return (tokens);
+}
+```
+
+**Example:**
+```
+Input:  echo "hello | world" | grep hello > out.txt
+Tokens: [echo] ["hello | world"] [|] [grep] [hello] [>] [out.txt]
+```
+
+#### 2. Parser
+
+Converts tokens into structured commands:
+
+```c
+t_cmd *parser(t_token *tokens)
+{
+    t_cmd *commands;
+    
+    // Group tokens into commands
+    // Identify redirections
+    // Set pipe flags
+    
+    return (commands);
+}
+```
+
+**Example:**
+```
+cmd[0]:
+  args: ["echo", "hello | world"]
+  pipe_out: true
+  
+cmd[1]:
+  args: ["grep", "hello"]
+  output_file: "out.txt"
+  pipe_in: true
+```
+
+#### 3. Expander
+
+Replaces variables before execution:
+
+```c
+void expander(t_cmd *cmd, t_shell *shell)
+{
+    // Replace $VAR with getenv("VAR")
+    // Replace $? with exit_code
+    // Don't expand inside single quotes
+    // Expand inside double quotes
+}
+```
+
+**Example:**
+```
+Input:  echo $USER works in $PWD
+After:  echo student works in /home/student/minishell
+```
+
+#### 4. Executor
+
+Executes commands with proper redirections:
+
+```c
+void executor(t_cmd *commands, t_shell *shell)
+{
+    int pipe_fd[2];
+    pid_t pid;
+    
+    // Create pipes if needed
+    for each command:
+        if (is_builtin(cmd))
+            exec_builtin(cmd, shell);
+        else
+        {
+            pid = fork();
+            if (pid == 0)  // Child
+            {
+                setup_redirections(cmd, pipe_fd);
+                execve(cmd->args[0], cmd->args, shell->envp);
+            }
+        }
+    
+    // Wait for all children
+    waitpid(-1, &status, 0);
+}
+```
+
+### Signal Handling
+
+```c
+volatile sig_atomic_t g_signal = 0;
+
+void signal_handler(int signum)
+{
+    if (signum == SIGINT)  // Ctrl+C
+    {
+        g_signal = SIGINT;
+        write(1, "\n", 1);
+        rl_on_new_line();
+        rl_replace_line("", 0);
+        rl_redisplay();
+    }
+}
+
+void setup_signals(void)
+{
+    struct sigaction sa;
+    
+    sa.sa_handler = signal_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART;
+    
+    sigaction(SIGINT, &sa, NULL);   // Ctrl+C
+    sigaction(SIGQUIT, SIG_IGN, NULL);  // Ctrl+\ (ignore)
+}
+```
+
+**Signal Behavior:**
+- `Ctrl+C`: Interrupts current command, displays new prompt
+- `Ctrl+D`: Exits shell (EOF)
+- `Ctrl+\`: Ignored (no action)
+
+### Pipe Implementation
+
+```c
+void execute_pipeline(t_cmd *commands, t_shell *shell)
+{
+    int pipe_fd[2];
+    int prev_fd = STDIN_FILENO;
+    pid_t pid;
+    
+    for (int i = 0; commands[i]; i++)
+    {
+        if (commands[i].pipe_out)
+            pipe(pipe_fd);
+            
+        pid = fork();
+        if (pid == 0)  // Child process
+        {
+            // Setup input from previous pipe
+            if (prev_fd != STDIN_FILENO)
+            {
+                dup2(prev_fd, STDIN_FILENO);
+                close(prev_fd);
+            }
+            
+            // Setup output to next pipe
+            if (commands[i].pipe_out)
+            {
+                close(pipe_fd[0]);
+                dup2(pipe_fd[1], STDOUT_FILENO);
+                close(pipe_fd[1]);
+            }
+            
+            // Handle redirections
+            setup_redirections(&commands[i]);
+            
+            // Execute
+            execve(cmd_path, commands[i].args, shell->envp);
+            exit(127);
+        }
+        
+        // Parent closes and updates
+        if (prev_fd != STDIN_FILENO)
+            close(prev_fd);
+            
+        if (commands[i].pipe_out)
+        {
+            close(pipe_fd[1]);
+            prev_fd = pipe_fd[0];
+        }
+    }
+    
+    // Wait for all children
+    while (wait(&status) > 0)
+        ;
+}
+```
+
+### Heredoc Implementation
+
+```c
+void handle_heredoc(t_cmd *cmd)
+{
+    int pipe_fd[2];
+    char *line;
+    
+    pipe(pipe_fd);
+    
+    while (1)
+    {
+        line = readline("> ");
+        if (!line || strcmp(line, cmd->delimiter) == 0)
+        {
+            free(line);
+            break;
+        }
+        
+        write(pipe_fd[1], line, strlen(line));
+        write(pipe_fd[1], "\n", 1);
+        free(line);
+    }
+    
+    close(pipe_fd[1]);
+    dup2(pipe_fd[0], STDIN_FILENO);
+    close(pipe_fd[0]);
+}
+```
+
+## Project Structure
+
+```
 minishell/
-│
 ├── src/
-│   ├── main.c
+│   ├── main.c                 # Main loop and initialization
 │   ├── prompt/
-│   │   ├── prompt.c
-│   │   └── signals.c
+│   │   ├── prompt.c          # Prompt display
+│   │   └── signals.c         # Signal handling
 │   ├── parser/
-│   │   ├── lexer.c
-│   │   ├── parser.c
-│   │   ├── expander.c
-│   │   └── quotes.c
+│   │   ├── lexer.c           # Tokenization
+│   │   ├── parser.c          # Command structure building
+│   │   ├── expander.c        # Variable expansion
+│   │   └── quotes.c          # Quote handling
 │   ├── executor/
-│   │   ├── exec.c
-│   │   ├── pipes.c
-│   │   ├── redirections.c
-│   │   ├── builtins.c
-│   │   └── env.c
+│   │   ├── exec.c            # Main execution logic
+│   │   ├── pipes.c           # Pipeline handling
+│   │   ├── redirections.c    # File redirections
+│   │   ├── builtins.c        # Built-in dispatcher
+│   │   └── env.c             # Environment management
+│   ├── builtins/
+│   │   ├── echo.c            # Echo implementation
+│   │   ├── cd.c              # Directory change
+│   │   ├── pwd.c             # Print working directory
+│   │   ├── export.c          # Export variables
+│   │   ├── unset.c           # Unset variables
+│   │   ├── env.c             # Display environment
+│   │   └── exit.c            # Exit shell
 │   └── utils/
-│       ├── ft_split_mod.c
-│       ├── free_utils.c
-│       └── error.c
-│
+│       ├── ft_split_mod.c    # Modified split for parsing
+│       ├── free_utils.c      # Memory cleanup
+│       ├── error.c           # Error handling
+│       └── path.c            # PATH resolution
 ├── include/
-│   └── minishell.h
-│
-├── libft/
-│   └── ...
-│
-├── Makefile
-└── README.md
+│   └── minishell.h           # Header with all prototypes
+├── libft/                    # Custom C library
+├── Makefile                  # Compilation rules
+└── README.md                # This file
 ```
 
-Essa estrutura já separa responsabilidades:
+## Compilation
 
-- **prompt/** → interação com o usuário, histórico e sinais
-- **parser/** → desmonta e interpreta a linha de comando
-- **executor/** → cria processos, redireciona, executa
-- **utils/** → utilitários, memória, erros, helpers
+The project uses a Makefile with the following targets:
 
-# 🧩 2. Etapas de Desenvolvimento (roadmap lógico)
+- `make` or `make all`: Compiles the minishell program
+- `make clean`: Removes object files
+- `make fclean`: Removes object files and executable
+- `make re`: Performs fclean followed by all
 
-## Fase 1 — Setup e prompt
+### Compilation Flags
 
-- Crie o `main()` com loop de leitura usando `readline()`.
-- Mostre o prompt (`minishell$` ) e armazene no histórico (`add_history()`).
-- Se a linha for vazia, pule.
-- Se for `Ctrl+D`, saia.
-- Faça o shell sair limpo (`exit code` correto).
-
-✅ **Dica:** já lide com `signal(SIGINT, handler)` pra não matar o shell com `Ctrl+C`.
-
-## Fase 2 — Lexer (tokenização)
-
-Transforma a linha em tokens (exemplo: `echo "oi | amigo"` → [echo] ["oi | amigo"]).
-
-**Etapas:**
-
-1. Separar palavras respeitando aspas `'` e `"`.
-2. Identificar operadores (`|`, `&lt;`, `&gt;`, `&gt;&gt;`, `&lt;&lt;`).
-3. Armazenar tokens em uma **lista ligada** ou **array de structs**.
-
-**Estrutura base:**
-
-```c
-typedef enum e_token_type {
-	T_WORD,
-	T_PIPE,
-	T_REDIRECT_IN,
-	T_REDIRECT_OUT,
-	T_APPEND,
-	T_HEREDOC
-}	t_token_type;
-
-typedef struct s_token {
-	char			*value;
-	t_token_type	type;
-	struct s_token	*next;
-}	t_token;
+```
+-Wall -Wextra -Werror -lreadline
 ```
 
-## Fase 3 — Parser
+## Testing
 
-Com os tokens prontos, monta comandos estruturados (com args, redirecionamentos, etc).
-
-**Exemplo:**
+### Basic Command Tests
 
 ```bash
-echo hello | grep h > out.txt
+# Simple execution
+./minishell
+minishell$ /bin/ls
+minishell$ pwd
+minishell$ echo hello
+
+# Built-ins
+minishell$ cd /tmp
+minishell$ pwd
+minishell$ export TEST=123
+minishell$ echo $TEST
+minishell$ env | grep TEST
+minishell$ unset TEST
 ```
 
-vira algo como:
-
-```
-cmd[0]: "echo"
-args: ["hello"]
-pipe_out: yes
-
-cmd[1]: "grep"
-args: ["h"]
-redir_out: "out.txt"
-```
-
-**Estrutura sugerida:**
-
-```c
-typedef struct s_cmd {
-	char	**args;
-	char	*input_file;
-	char	*output_file;
-	int		append;
-	int		pipe_in;
-	int		pipe_out;
-}	t_cmd;
-```
-
-## Fase 4 — Expansão ($ e variáveis)
-
-Antes de executar, substitua `$VAR`, `$?`, etc.
-
-- `$VAR` → `getenv("VAR")`
-- `$?` → último código de saída
-- dentro de aspas simples `' '` → **não expande**
-- dentro de aspas duplas `" "` → expande
-
-## Fase 5 — Executor
-
-Aqui entra o sangue e o caos (fork, dup2, execve).
-
-**Processo:**
-
-1. Crie **pipes** entre comandos.
-2. Para cada comando:
-    - `fork()`
-    - No filho:
-        - `dup2()` para redirecionamentos e pipes
-        - `execve()` para executar o binário
-    - No pai:
-        - Fecha pipes que não usa
-        - `waitpid()`
-
-**Importante:** as builtins (`cd`, `echo`, etc.) **não** precisam de fork se forem executadas isoladamente.
-
-Mas dentro de um pipeline, sim.
-
-## Fase 6 — Builtins
-
-Implemente um a um:
-
-- **echo [-n]**
-- **cd [path]**
-- **pwd**
-- **export**
-- **unset**
-- **env**
-- **exit**
-
-Crie uma função:
-
-```c
-int	is_builtin(char *cmd);
-int	exec_builtin(t_cmd *cmd, t_env *env);
-```
-
-## Fase 7 — Redirecionamentos
-
-- `&gt;` → dup2(fd_out, STDOUT_FILENO)
-- `&lt;` → dup2(fd_in, STDIN_FILENO)
-- `&gt;&gt;` → open com `O_APPEND`
-- `&lt;&lt;` → heredoc (leitura até delimitador)
-
-**Heredoc:**
-
-- lê até encontrar o delimitador
-- salva num pipe ou arquivo temporário
-- redireciona `STDIN` do comando
-
-## Fase 8 — Sinais
-
-**Comportamento bash:**
-
-- `Ctrl+C`: interrompe comando, mas não mata shell
-- `Ctrl+\`: ignora
-- `Ctrl+D`: sai
-
-Use `sigaction()` e `tcgetattr()` / `tcsetattr()` para controle fino.
-
-## Fase 9 — Testes e Validação
-
-Crie scripts simples:
+### Pipe Tests
 
 ```bash
-echo hello
-ls | wc -l
-cat < file | grep word > out.txt
-echo $USER
-export VAR=ok && echo $VAR
+minishell$ ls | grep mini
+minishell$ cat file.txt | grep pattern | wc -l
+minishell$ echo "test" | cat | cat | cat
 ```
 
-E valide saída comparando com bash.
+### Redirection Tests
 
-# 🧠 3. Variável Global Permitida
+```bash
+minishell$ echo "hello" > test.txt
+minishell$ cat < test.txt
+minishell$ echo "world" >> test.txt
+minishell$ cat < test.txt > output.txt
+```
 
-Apenas uma:
+### Heredoc Tests
+
+```bash
+minishell$ cat << EOF
+> Line 1
+> Line 2
+> EOF
+
+minishell$ grep hello << END
+> hello world
+> test hello
+> END
+```
+
+### Variable Expansion Tests
+
+```bash
+minishell$ echo $USER
+minishell$ echo $PWD
+minishell$ echo $?
+minishell$ export VAR="test"
+minishell$ echo $VAR
+minishell$ echo '$VAR'        # not expanded
+minishell$ echo "$VAR"        # expanded
+```
+
+### Quote Tests
+
+```bash
+minishell$ echo 'hello | world'
+minishell$ echo "hello | world"
+minishell$ echo "$USER works here"
+minishell$ echo '$USER works here'
+```
+
+### Signal Tests
+
+```bash
+# Test Ctrl+C during command
+minishell$ sleep 100
+^C
+minishell$
+
+# Test Ctrl+D
+minishell$ 
+^D
+exit
+
+# Test Ctrl+\ (should be ignored)
+minishell$ sleep 100
+^\minishell$
+```
+
+### Comparison Script
+
+```bash
+#!/bin/bash
+
+test_cmd() {
+    echo "Testing: $1"
+    
+    bash -c "$1" > bash_out.txt 2>&1
+    bash_exit=$?
+    
+    echo "$1" | ./minishell > mini_out.txt 2>&1
+    mini_exit=$?
+    
+    if diff bash_out.txt mini_out.txt && [ $bash_exit -eq $mini_exit ]; then
+        echo "✓ PASS"
+    else
+        echo "✗ FAIL"
+        diff bash_out.txt mini_out.txt
+    fi
+}
+
+test_cmd "echo hello"
+test_cmd "ls | wc -l"
+test_cmd "echo \$USER"
+test_cmd "cat < /etc/passwd | grep root"
+```
+
+## Key Concepts
+
+### Process Management
+
+**Fork**: Creates a child process
+- Returns 0 in child
+- Returns child PID in parent
+- Returns -1 on error
+
+**Execve**: Replaces current process with new program
+- Never returns on success
+- Returns -1 on error
+
+**Wait/Waitpid**: Waits for child process termination
+
+### File Descriptors
+
+Standard file descriptors:
+- **0 (STDIN)**: Standard input
+- **1 (STDOUT)**: Standard output
+- **2 (STDERR)**: Standard error
+
+**dup2(oldfd, newfd)**: Duplicates file descriptor for redirection
+
+### Pipes
+
+A pipe connects the output of one command to the input of another:
 
 ```c
-volatile sig_atomic_t g_signal;
+int pipe_fd[2];
+pipe(pipe_fd);  // Create pipe
+// pipe_fd[0] = read end
+// pipe_fd[1] = write end
 ```
 
-Guarde o número do último sinal recebido.
+### Environment Variables
 
-Use-a pra modificar comportamento do prompt, não pra armazenar dados.
+Managed through:
+- `getenv(name)`: Get variable value
+- Custom env array: For export/unset
 
-# 💡 4. Dicas Estratégicas
+### Readline Functions
 
-- Comece **sem redirecionamentos nem pipes**. Faça um shell que executa um comando simples primeiro.
-- Use `strace bash` pra observar comportamento real.
-- Evite misturar parsing com execução.
-- Debugue com prints de tokens e comandos estruturados.
-- **Nunca** use funções proibidas (como `system()` ou `popen()`).
+- `readline(prompt)`: Read line with editing support
+- `add_history(line)`: Add to history
+- `rl_clear_history()`: Clear history
+- `rl_on_new_line()`: Cursor to new line
+- `rl_replace_line(text, clear)`: Replace current line
+- `rl_redisplay()`: Redraw prompt
 
-# 🚀 5. Etapas de Entrega
+## Development Roadmap
 
-**Mínimo funcional para não zerar:**
+### Phase 1: Foundation (Days 1-4)
+- Set up project structure
+- Implement main loop with readline
+- Add signal handling (Ctrl+C, Ctrl+D)
+- Test basic prompt functionality
 
-- Prompt + histórico
-- Execução simples (sem pipes/redirs)
-- Variáveis `$` e `$?`
-- Builtins básicos
-- Ctrl+C/D/\ funcionando
+### Phase 2: Parsing (Days 5-9)
+- Implement lexer (tokenization)
+- Create parser (command structures)
+- Add quote handling
+- Test with various inputs
 
-Depois vá expandindo para:
+### Phase 3: Execution (Days 10-14)
+- Implement simple executor (no pipes/redirs)
+- Add PATH resolution
+- Test with basic commands
 
-- Pipes
-- Redirs
-- Heredoc
+### Phase 4: Built-ins (Days 15-18)
+- Implement all 7 built-ins
+- Test each individually
+- Test built-ins in pipelines
 
-Só depois disso pense em bônus (`&amp;&amp;`, `||`, `*`).
+### Phase 5: Advanced Features (Days 19-23)
+- Add pipe support
+- Implement redirections (<, >, >>)
+- Add heredoc support
+- Test complex combinations
+
+### Phase 6: Polish (Days 24-26)
+- Variable expansion ($VAR, $?)
+- Refine signal handling
+- Memory leak checks
+- Final testing and norminette
+
+## Common Pitfalls
+
+### ❌ Don't Mix Parsing and Execution
+Keep them separate for cleaner code and easier debugging.
+
+### ❌ Don't Forget to Close FDs
+Every opened file descriptor must be closed to avoid leaks.
+
+### ❌ Don't Fork for Built-ins Alone
+Built-ins don't need fork when executed alone, only in pipelines.
+
+### ❌ Don't Use Prohibited Functions
+Never use `system()`, `popen()`, or other forbidden functions.
+
+### ✅ Do Test Incrementally
+Test each feature before moving to the next.
+
+### ✅ Do Compare with Bash
+Use `strace bash` to understand expected behavior.
+
+### ✅ Do Check Memory Leaks
+Run `valgrind` regularly during development.
+
+## Authors
+
+**wedos-sa && be-dantas** - Cadets at 42 School
 
 ---
 
-Se quiser, posso montar o **esqueleto de código inicial** (Makefile, headers e funções base) pra você começar com um ambiente pronto e norminette-safe.
-
-**Quer que eu monte essa base pra você agora?**
-
-# 📋 Lista de Ações
-
-- [ ]  Criar estrutura de pastas do projeto minishell
-- [ ]  Implementar main() com loop de leitura usando readline()
-- [ ]  Adicionar prompt (minishell$ ) e histórico com add_history()
-- [ ]  Lidar com signal(SIGINT, handler) para Ctrl+C
-- [ ]  Implementar lexer para tokenização da linha de comando
-- [ ]  Criar estrutura de dados para tokens (lista ligada ou array de structs)
-- [ ]  Implementar parser para montar comandos estruturados
-- [ ]  Implementar expansão de variáveis ($VAR, $?)
-- [ ]  Implementar executor com fork, dup2 e execve
-- [ ]  Criar pipes entre comandos
-- [ ]  Implementar builtin: echo [-n]
-- [ ]  Implementar builtin: cd [path]
-- [ ]  Implementar builtin: pwd
-- [ ]  Implementar builtin: export
-- [ ]  Implementar builtin: unset
-- [ ]  Implementar builtin: env
-- [ ]  Implementar builtin: exit
-- [ ]  Implementar redirecionamento de saída (>)
-- [ ]  Implementar redirecionamento de entrada (<)
-- [ ]  Implementar redirecionamento com append (>>)
-- [ ]  Implementar heredoc (<<)
-- [ ]  Configurar sinais com sigaction() e tcgetattr()/tcsetattr()
-- [ ]  Criar scripts de teste e validar saída comparando com bash
-- [ ]  Usar strace bash para observar comportamento real
-
-# 📝 Resumo do Projeto
-
-- **Objetivo:** Construir um shell simples inspirado no bash, com prompt, parsing, execução de comandos e redirecionamentos
-- **Estrutura modular:** Separar código em prompt, parser, executor e utils para facilitar manutenção
-- **Fluxo principal:** Ler linha → tokenizar → parsear → expandir variáveis → executar com fork/execve
-- **Implementações-chave:** Pipes, redirecionamentos (>, <, >>, <<), builtins (echo, cd, pwd, export, unset, env, exit)
-- **Tratamento de sinais:** Ctrl+C interrompe comando sem matar shell, Ctrl+D sai, Ctrl+\ ignorado
-- **Expansão de variáveis:** $VAR via getenv(), $? para código de saída, não expandir em aspas simples
-- **Estratégia de desenvolvimento:** Começar simples (um comando só), adicionar pipes/redirs progressivamente, testar contra bash
-- **Variável global permitida:** Apenas uma (volatile sig_atomic_t g_signal) para sinais
-
-# 📅 Cronograma de Desenvolvimento (26 dias)
-
-## Semana 1 (Dias 1-7): Fundação
-
-- **Dia 1-2:** Criar estrutura de pastas, Makefile, headers básicos e main() com readline()
-- **Dia 3-4:** Implementar prompt, histórico e tratamento básico de sinais (Ctrl+C, Ctrl+D)
-- **Dia 5-6:** Desenvolver lexer para tokenização da linha de comando
-- **Dia 7:** Criar estrutura de dados para tokens e testar parsing básico
-
-## Semana 2 (Dias 8-14): Parser e Executor Básico
-
-- **Dia 8-9:** Implementar parser para montar comandos estruturados
-- **Dia 10-11:** Criar executor simples (fork + execve) sem pipes nem redirecionamentos
-- **Dia 12-13:** Implementar expansão de variáveis ($VAR, $?)
-- **Dia 14:** Testar execução de comandos simples e validar contra bash
-
-## Semana 3 (Dias 15-21): Builtins e Pipes
-
-- **Dia 15-16:** Implementar builtins: echo, cd, pwd
-- **Dia 17-18:** Implementar builtins: export, unset, env, exit
-- **Dia 19-20:** Adicionar suporte a pipes entre comandos
-- **Dia 21:** Testar pipelines e ajustar comportamento de builtins em pipes
-
-## Semana 4 (Dias 22-26): Redirecionamentos e Finalização
-
-- **Dia 22:** Implementar redirecionamentos básicos (>, <)
-- **Dia 23:** Implementar append (>>) e heredoc (<<)
-- **Dia 24:** Refinar tratamento de sinais com sigaction() e tcgetattr()
-- **Dia 25:** Testes extensivos, correção de bugs e validação contra bash
-- **Dia 26:** Revisão final de norminette, leaks de memória e entrega
-
-### ⚠️ Dicas para manter o cronograma:
-
-- Não pule etapas — cada fase depende da anterior
-- Teste constantemente comparando com bash
-- Use valgrind diariamente para evitar acúmulo de leaks
-- Se atrasar, priorize: executor simples → builtins → pipes → redirecionamentos
+*This project demonstrates fundamental Unix system programming concepts including process creation, inter-process communication, signal handling, and shell command interpretation.*

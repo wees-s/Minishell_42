@@ -1,7 +1,19 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: bedantas <bedantas@student.42.fr>          +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2025/11/26 16:34:11 by bedantas          #+#    #+#              #
+#    Updated: 2025/11/26 16:34:12 by bedantas         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
 NAME		= minishell
 
 CC			= cc
-CFLAGS		= -Wall -Wextra -Werror
+CFLAGS		= -g -Wall -Wextra -Werror
 
 SRC_DIR		= src
 LIBFT_DIR	= libft
@@ -48,7 +60,7 @@ fclean: clean
 	$(SILENT)$(MAKE) fclean -C $(LIBFT_DIR) -s
 
 run: all
-	valgrind --suppressions=readline.sup --track-fds=yes --leak-check=full --show-leak-kinds=all ./minishell
+	valgrind --suppressions=readline.sup --track-fds=yes --leak-check=full --show-leak-kinds=all --trace-children=yes --trace-children-skip='*/bin/*,*/sbin/*,/usr/bin/*' ./minishell
 
 re: fclean all
 

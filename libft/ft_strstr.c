@@ -1,24 +1,35 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strndup.c                                       :+:      :+:    :+:   */
+/*   ft_strstr.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: bedantas <bedantas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/07/15 15:50:39 by wedos-sa          #+#    #+#             */
-/*   Updated: 2025/11/05 13:49:12 by bedantas         ###   ########.fr       */
+/*   Created: 2025/10/06 14:02:38 by wedos-sa          #+#    #+#             */
+/*   Updated: 2025/11/12 14:17:57 by bedantas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-char	*ft_strndup(const char *s1, size_t n)
+char	*ft_strstr(char **text, char *word)
 {
-	char	*s2;
+	int	x;
+	int	i;
 
-	s2 = malloc((n + 1) * sizeof(char));
-	if (!s2)
-		return (NULL);
-	ft_strlcpy(s2, s1, n);
-	return (s2);
+	x = 0;
+	while (text[x])
+	{
+		i = 0;
+		if (text[x][i] == word[i])
+		{
+			while (word[i] != '\0' && text[x][i]
+					!= '\0' && text[x][i] == word [i])
+				i++;
+			if (word[i] == '\0' && text[x][i - 1] == word[i - 1])
+				return (&text[x][i + 1]);
+		}
+		x++;
+	}
+	return (0);
 }
