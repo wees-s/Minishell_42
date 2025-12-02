@@ -6,7 +6,7 @@
 /*   By: bedantas <bedantas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/26 16:32:04 by bedantas          #+#    #+#             */
-/*   Updated: 2025/11/26 16:32:05 by bedantas         ###   ########.fr       */
+/*   Updated: 2025/11/28 15:29:33 by bedantas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ static void	free_all(char *str1, char *str2, char *str3)
 	str3 = NULL;
 }
 
-static void	expand_and_free(t_here	*h, t_env *begin_list)
+static void	expand_and_free(t_here	*h, t_shell *sh)
 {
 	int		len;
 	int		flag_quotes;
@@ -34,7 +34,7 @@ static void	expand_and_free(t_here	*h, t_env *begin_list)
 		flag_quotes = 1;
 	if (flag_quotes == 0)
 	{
-		result_final = expand_arg(begin_list, h->result, 0);
+		result_final = expand_arg(sh, h->result, 0);
 		free(h->result);
 		h->result = ft_strdup(result_final);
 		free(result_final);
@@ -87,7 +87,7 @@ char	*heredoc(t_shell *sh, int i, int *fd_malloc)
 	dup2_close_in_out(sh->fd_in, sh->fd_out);
 	free(fd_malloc);
 	free(h.temp1);
-	expand_and_free(&h, sh->env);
+	expand_and_free(&h, sh);
 	free_list(&sh->env);
 	return (h.result);
 }

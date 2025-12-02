@@ -6,7 +6,7 @@
 /*   By: bedantas <bedantas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/26 16:33:11 by bedantas          #+#    #+#             */
-/*   Updated: 2025/11/26 16:33:12 by bedantas         ###   ########.fr       */
+/*   Updated: 2025/11/28 15:30:57 by bedantas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,21 +34,21 @@ static char	*expand_literal(char *str, int *i)
 	return (literal);
 }
 
-static char	*temp_expand(char *str, int *i, t_env *begin_list)
+static char	*temp_expand(char *str, int *i, t_shell *sh)
 {
 	char	*temp;
 
 	if (str[*i + 1] == '?')
 	{
-		temp = ft_substr(str, *i, 2);
+		temp = ft_itoa(sh->last_exit_status);
 		*i += 2;
 	}
 	else
-		temp = expand_variable(begin_list, str, i);
+		temp = expand_variable(sh->env, str, i);
 	return (temp);
 }
 
-char	*expand_arg(t_env *begin_list, char *str, int i)
+char	*expand_arg(t_shell *sh, char *str, int i)
 {
 	int		in_single;
 	int		in_double;
@@ -62,10 +62,10 @@ char	*expand_arg(t_env *begin_list, char *str, int i)
 	{
 		if (str[i] == '\'' && !in_double)
 			in_single = !in_single;
-		else if (str[i] == '"' && !in_single)
+		else if (str[i] == '\"' && !in_single)
 			in_double = !in_double;
 		if (str[i] == '$' && !in_single && str[i + 1])
-			temp = temp_expand(str, &i, begin_list);
+			temp = temp_expand(str, &i, sh);
 		else
 		{
 			temp = expand_literal(str, &i);

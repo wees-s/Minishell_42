@@ -75,14 +75,6 @@ char	**tokens(char *line)
 
 	split_tokens = split_with_quotes(line);
 	temp = remove_quotes_str(split_tokens[0], 0, 0);
-	if (ft_countchar(split_tokens[0], ' ') != 0 || temp == NULL)
-	{
-		printf("Command not found\n");
-		if (temp)
-			free(temp);
-		free_array(split_tokens);
-		return (NULL);
-	}
 	free(split_tokens[0]);
 	split_tokens[0] = temp;
 	return (split_tokens);

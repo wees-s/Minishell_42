@@ -6,7 +6,7 @@
 /*   By: bedantas <bedantas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/26 16:33:35 by bedantas          #+#    #+#             */
-/*   Updated: 2025/11/27 13:44:07 by bedantas         ###   ########.fr       */
+/*   Updated: 2025/11/28 14:42:14 by bedantas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,34 +14,36 @@
 
 static int	check_flag(char *token)
 {
-	int	i;
+	int		i;
+	int		flag;
+	char	*temp;
 
 	i = 0;
+	flag = 1;
 	if (!token)
 		return (0);
-	if (token[i] == '-' && token[i + 1] == 'n')
+	temp = remove_quotes_str(token, 0, 0);
+	if (temp[i] == '-' && temp[i + 1] == 'n')
 	{
 		i++;
-		while (token[i] != '\0')
+		while (temp[i] != '\0')
 		{
-			if (token[i] != 'n')
-				return (0);
+			if (temp[i] != 'n')
+				flag = 0;
 			i++;
 		}
 	}
 	else
-		return (0);
-	return (1);
+		flag = 0;
+	free(temp);
+	return (flag);
 }
 
 static void	result_exit(t_shell *sh)
 {
-	if (!g_heredoc_child)
-		printf("%d\n", sh->last_exit_status);
-	else
-		printf("%d\n", g_heredoc_child + 128);
+	printf("%d\n", sh->last_exit_status);
 	sh->last_exit_status = 0;
-	g_heredoc_child = 0;
+	g_heredoc_child = -1;
 }
 
 static char	*result_echo(char **token, t_shell *sh, int flag, int i)

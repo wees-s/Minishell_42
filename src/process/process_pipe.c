@@ -6,12 +6,28 @@
 /*   By: bedantas <bedantas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/26 16:32:30 by bedantas          #+#    #+#             */
-/*   Updated: 2025/11/27 11:59:00 by bedantas         ###   ########.fr       */
+/*   Updated: 2025/11/28 16:47:04 by bedantas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../utils/minishell.h"
 #include "process.h"
+
+static void	pipes_utils(t_pipes p, t_shell *sh)
+{
+	int	status;
+
+	waitpid(p.last_pid, &status, 0);
+	if (WIFEXITED(status))
+		sh->last_exit_status = WEXITSTATUS(status);
+	else if (WIFSIGNALED(status))
+		sh->last_exit_status = 128 + WTERMSIG(status);
+	while (wait(NULL) > 0)
+		;
+	free_array(sh->s_pipe);
+	dup2_close_in_out(sh->fd_in, sh->fd_out);
+	signal(SIGINT, handle_sigint);
+}
 
 static void	child_utils(t_shell *sh, t_pipes *p, int i)
 {
@@ -35,36 +51,31 @@ static void	child_utils(t_shell *sh, t_pipes *p, int i)
 		exit(EXIT_FAILURE);
 	}
 	p->tokens_cmd = tokens(p->cmd);
+	free(p->cmd);
 }
 
 static void	child_process(t_shell *sh, t_pipes p, int i)
 {
 	child_utils(sh, &p, i);
+	if (!p.tokens_cmd || p.tokens_cmd[0][0] == '\0')
+	{
+		free_array(sh->s_pipe);
+		dup2_close_in_out(sh->fd_in, sh->fd_out);
+		exec_access_putstr("Command not found\n", p.tokens_cmd, 127, sh->env);
+	}
 	if (is_builtin(p.tokens_cmd[0]))
-		exec_line(p.tokens_cmd, sh, p.cmd);
+		exec_line(p.tokens_cmd, sh);
 	else
+	{
+		signal(SIGINT, SIG_DFL);
+		signal(SIGQUIT, SIG_DFL);
 		exec_external(p.tokens_cmd, sh);
-	free(p.cmd);
+	}
 	free_array(p.tokens_cmd);
 	free_array(sh->s_pipe);
 	free_list(&sh->env);
 	dup2_close_in_out(sh->fd_in, sh->fd_out);
 	exit(EXIT_SUCCESS);
-}
-
-static void	pipes_utils(t_pipes p, t_shell *sh)
-{
-	int	status;
-
-	waitpid(p.last_pid, &status, 0);
-	if (WIFEXITED(status))
-		sh->last_exit_status = WEXITSTATUS(status);
-	else if (WIFSIGNALED(status))
-		sh->last_exit_status = 128 + WTERMSIG(status);
-	while (wait(NULL) > 0)
-		;
-	free_array(sh->s_pipe);
-	dup2_close_in_out(sh->fd_in, sh->fd_out);
 }
 
 void	process_pipes(t_shell *sh)
@@ -74,12 +85,11 @@ void	process_pipes(t_shell *sh)
 
 	i = 0;
 	p.prev_fd = -1;
-	sh->fd_in = dup(STDIN_FILENO);
-	sh->fd_out = dup(STDOUT_FILENO);
 	while (sh->s_pipe[i])
 	{
 		if (sh->s_pipe[i + 1])
 			pipe(p.fd);
+		signal(SIGINT, SIG_IGN);
 		p.pid = fork();
 		if (p.pid == 0)
 			child_process(sh, p, i);

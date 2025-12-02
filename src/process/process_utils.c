@@ -6,7 +6,7 @@
 /*   By: bedantas <bedantas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/26 16:32:23 by bedantas          #+#    #+#             */
-/*   Updated: 2025/11/27 12:04:31 by bedantas         ###   ########.fr       */
+/*   Updated: 2025/11/28 16:21:45 by bedantas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,12 +82,12 @@ void	exec_external(char **tokens, t_shell *sh)
 		free(temp);
 	}
 	if (flag == 1)
-		cmd_bar(tokens, sh->env, sh->fd_in, sh->fd_out);
+		cmd_bar(tokens, sh);
 	else
 		cmd_not_bar(tokens, sh);
 }
 
-void	exec_line(char **line_tokens, t_shell *sh, char *cmd)
+void	exec_line(char **line_tokens, t_shell *sh)
 {
 	if (ft_strncmp(line_tokens[0], "echo", 5) == 0)
 		echo(line_tokens, sh);
@@ -113,5 +113,5 @@ void	exec_line(char **line_tokens, t_shell *sh, char *cmd)
 		}
 	}
 	else if (ft_strncmp(line_tokens[0], "exit", 5) == 0)
-		exit_process(line_tokens, sh, cmd);
+		exit_process(line_tokens, sh);
 }

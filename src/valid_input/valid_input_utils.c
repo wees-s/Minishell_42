@@ -10,20 +10,40 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../utils/minishell.h"
+#include "../../utils/minishell.h"
 
-static int	check_pipe_error(char *line, int i)
+static void	valid_quotes_utils(char c, t_valid *v)
 {
-	int	j;
+	if (c == '\'' && !v->quote1)
+		v->quote2 = !v->quote2;
+	else if (c == '\"' && !v->quote2)
+		v->quote1 = !v->quote1;
+	v->found_char = 1;
+	if (v->last_pipe)
+		v->last_pipe = 0;
+}
 
-	j = i + 1;
-	if (line[i + 1] == '|')
-		return (1);
-	while (line[j] && line[j] == ' ')
-		j++;
-	if (!line[j] || line[j] == '|')
-		return (1);
-	return (0);
+static int	valid_pipe_utils(char *line, t_valid *v, int i, int j)
+{
+	if ((line[i] == '\'' && !v->quote1) || (line[i] == '\"' && !v->quote2))
+		valid_quotes_utils(line[i], v);
+	else if (line[i] == '|' && !v->quote1 && !v->quote2)
+	{
+		while (line[j] && line[j] == ' ')
+			j++;
+		if (!line[j] || line[j] == '|')
+			return (0);
+		v->last_pipe = 1;
+	}
+	else if (line[i] != ' ' && !v->quote1 && !v->quote2)
+	{
+		v->found_char = 1;
+		if (v->last_pipe)
+			v->last_pipe = 0;
+	}
+	if (line[i] != ' ')
+		v->found_char = 1;
+	return (1);
 }
 
 int	valid_pipe(char *line, t_valid *v, int i)
@@ -32,22 +52,12 @@ int	valid_pipe(char *line, t_valid *v, int i)
 		i++;
 	if (line[i] == '|')
 		return (0);
+	if (line[ft_strlen(line) - 1] == '|')
+		return (0);
 	while (line[i])
 	{
-		if (line[i] == '\'' && !v->quote1)
-			v->quote2 = !v->quote2;
-		else if (line[i] == '\"' && !v->quote2)
-			v->quote1 = !v->quote1;
-		else if (line[i] == '|' && !v->quote1 && !v->quote2)
-		{
-			if (check_pipe_error(line, i))
-				return (0);
-			v->last_pipe = 1;
-		}
-		else if (line[i] != ' ')
-			v->last_pipe = 0;
-		if (line[i] != ' ')
-			v->found_char = 1;
+		if (valid_pipe_utils(line, v, i, i + 1) == 0)
+			return (0);
 		i++;
 	}
 	if (v->last_pipe || !v->found_char)
@@ -99,27 +109,5 @@ int	valid_red(char *line, char c)
 		}
 		i++;
 	}
-	return (1);
-}
-
-int	valid_quotes(char *line)
-{
-	int	i;
-	int	quote1;
-	int	quote2;
-
-	i = 0;
-	quote1 = 0;
-	quote2 = 0;
-	while (line[i])
-	{
-		if (line[i] == '\'' && !quote1)
-			quote2 = !quote2;
-		else if (line[i] == '\"' && !quote2)
-			quote1 = !quote1;
-		i++;
-	}
-	if (quote1 || quote2)
-		return (0);
 	return (1);
 }

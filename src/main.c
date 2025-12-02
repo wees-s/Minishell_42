@@ -6,7 +6,7 @@
 /*   By: bedantas <bedantas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/26 16:31:20 by bedantas          #+#    #+#             */
-/*   Updated: 2025/11/27 13:39:01 by bedantas         ###   ########.fr       */
+/*   Updated: 2025/12/01 10:51:56 by bedantas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,42 +25,26 @@ char	*read_input(t_shell *sh)
 {
 	char	*line;
 
-	line = readline("@minishell ~ ");
+	line = readline("\001\033[38;2;255;0;180m\002Minishell$ \001\033[0m\002");
 	if (line == NULL)
 	{
 		rl_clear_history();
 		free_list(&sh->env);
-		sh->last_exit_status = 0;
 		printf("exit\n");
-		exit(EXIT_SUCCESS);
+		exit(sh->last_exit_status);
 	}
 	if (line[0] != '\0')
 		add_history(line);
 	return (line);
 }
 
-static int	valid_input(char *line, t_shell *sh)
+static void	status_signal(t_shell *sh)
 {
-	t_valid	v;
-
-	v.quote1 = 0;
-	v.quote2 = 0;
-	v.last_pipe = 0;
-	v.found_char = 0;
-	if (!valid_pipe(line, &v, 0)
-		|| !valid_red(line, '>') || !valid_red(line, '<'))
+	if (g_heredoc_child == SIGINT || g_heredoc_child == SIGQUIT)
 	{
-		printf("Syntax error\n");
-		sh->last_exit_status = 2;
-		return (0);
+		sh->last_exit_status = g_heredoc_child + 128;
+		g_heredoc_child = -1;
 	}
-	else if (!valid_quotes(line))
-	{
-		printf("unexpected EOF while looking for matching `\"\'\n");
-		sh->last_exit_status = 2;
-		return (0);
-	}
-	return (1);
 }
 
 static void	redirect_and_command(char *input, t_shell *sh)
@@ -69,12 +53,14 @@ static void	redirect_and_command(char *input, t_shell *sh)
 	int		count_pipe;
 
 	count_pipe = 0;
-	line = expand_arg(sh->env, input, 0);
+	line = expand_arg(sh, input, 0);
 	if (!valid_input(line, sh))
 	{
 		free(line);
 		return ;
 	}
+	sh->fd_in = dup(STDIN_FILENO);
+	sh->fd_out = dup(STDOUT_FILENO);
 	sh->s_pipe = split_pipe(line, 0, 0);
 	free(line);
 	while (sh->s_pipe[count_pipe])
@@ -90,8 +76,11 @@ int	main(int argc, char **argv, char **envp)
 	char	*input;
 	t_shell	sh;
 
-	(void)argc;
-	(void)argv;
+	if (argc > 1)
+	{
+		printf("minishell: unsupported arguments (\'%s\')\n", argv[1]);
+		exit(2);
+	}
 	sh.env = clone_env(envp);
 	sh.last_exit_status = 0;
 	signal(SIGINT, handle_sigint);
@@ -99,13 +88,12 @@ int	main(int argc, char **argv, char **envp)
 	while (1)
 	{
 		input = read_input(&sh);
-		if (input[0] != '\0')
+		status_signal(&sh);
+		if (input[0] != '\0' && g_heredoc_child == -1)
 			redirect_and_command(input, &sh);
-		free(input);	
+		free(input);
 	}
 	rl_clear_history();
 	free_list(&sh.env);
 	return (0);
 }
-
-// cat < README.md < Makefile << here
