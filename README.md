@@ -1,4 +1,6 @@
-# Milestone3 Minishell
+<img width="2000" height="1000" alt="image" src="https://github.com/user-attachments/assets/d50984ec-f829-41bc-a03a-f44db755e888" />
+
+# Minishell
 
 A minimal shell implementation built as part of the 42 curriculum. This project reproduces essential behaviors of **bash**, excluding logical operators such as `||` and `&&`, focusing strictly on the mandatory requirements.
 
